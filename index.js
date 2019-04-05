@@ -115,6 +115,10 @@ Fritz.prototype = {
         return this.call(module.exports.getBasicDeviceStats);
     },
 
+    getOverviewData: function() {
+        return this.call(module.exports.getOverviewData);
+    },
+
     getDeviceList: function() {
         return this.call(module.exports.getDeviceList);
     },
@@ -445,6 +449,24 @@ module.exports.getDeviceList = function(sid, options)
             return device;
         });
         return devices;
+    });
+};
+
+// get 'overview' page data
+module.exports.getOverviewData = function(sid, options)
+{
+    let req = {
+        method: 'POST',
+        form: {
+            sid: sid,
+            shr: 1,
+            page: 'overview'
+        }
+    };
+
+    return httpRequest('/data.lua', req, options).then(function(body)
+    {
+        return JSON.parse(body);
     });
 };
 
