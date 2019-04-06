@@ -252,7 +252,7 @@ module.exports.getSessionID = function(username, password, options)
 // get device list
 module.exports.getDeviceList = function(sid, options)
 {
-    return module.exports.executeCommand( sid, 'getdevicelistinfos', null, options).then(function(devicelistinfo) {
+    return executeCommand( sid, 'getdevicelistinfos', null, options).then(function(devicelistinfo) {
         var devices = parser.xml2json(devicelistinfo);
         // extract devices as array
         devices = [].concat((devices.devicelist || {}).device || []).map(function(device) {
