@@ -34,12 +34,21 @@ function Fritz(username, password, uri, strictssl) {
     this.options = { url: uri || 'http://fritz.box', strictSSL: strictssl };
 
     //bitfunctions hidden, unchangable to prototype
+    if (!Fritz.prototype.HANFUN)            { Object.defineProperty( Fritz.prototype, "HANFUN",            {value: module.exports.FUNCTION_HANFUN,            writable: false}); }
+    if (!Fritz.prototype.LIGHT)             { Object.defineProperty( Fritz.prototype, "LIGHT",             {value: module.exports.FUNCTION_LIGHT,             writable: false}); }
     if (!Fritz.prototype.ALARM)             { Object.defineProperty( Fritz.prototype, "ALARM",             {value: module.exports.FUNCTION_ALARM,             writable: false}); }
+    if (!Fritz.prototype.BUTTON)            { Object.defineProperty( Fritz.prototype, "BUTTON",            {value: module.exports.FUNCTION_BUTTON,            writable: false}); }
     if (!Fritz.prototype.THERMOSTAT)        { Object.defineProperty( Fritz.prototype, "THERMOSTAT",        {value: module.exports.FUNCTION_THERMOSTAT,        writable: false}); }
     if (!Fritz.prototype.ENERGYMETER)       { Object.defineProperty( Fritz.prototype, "ENERGYMETER",       {value: module.exports.FUNCTION_ENERGYMETER,       writable: false}); }
     if (!Fritz.prototype.TEMPERATURESENSOR) { Object.defineProperty( Fritz.prototype, "TEMPERATURESENSOR", {value: module.exports.FUNCTION_TEMPERATURESENSOR, writable: false}); }
     if (!Fritz.prototype.OUTLET)            { Object.defineProperty( Fritz.prototype, "OUTLET",            {value: module.exports.FUNCTION_OUTLET,            writable: false}); }
     if (!Fritz.prototype.DECTREPEATER)      { Object.defineProperty( Fritz.prototype, "DECTREPEATER",      {value: module.exports.FUNCTION_DECTREPEATER,      writable: false}); }
+    if (!Fritz.prototype.MICROFONE)         { Object.defineProperty( Fritz.prototype, "MICROFONE",         {value: module.exports.FUNCTION_MICROFONE,         writable: false}); }
+    if (!Fritz.prototype.TEMPLATE)          { Object.defineProperty( Fritz.prototype, "TEMPLATE",          {value: module.exports.FUNCTION_TEMPLATE,          writable: false}); }
+    if (!Fritz.prototype.HANFUNUNIT)        { Object.defineProperty( Fritz.prototype, "HANFUNUNIT",        {value: module.exports.FUNCTION_HANFUNUNIT,        writable: false}); }
+    if (!Fritz.prototype.SWITCHCONTROL)     { Object.defineProperty( Fritz.prototype, "SWITCHCONTROL",     {value: module.exports.FUNCTION_SWITCHCONTROL,     writable: false}); }
+    if (!Fritz.prototype.LEVELCONTROL)      { Object.defineProperty( Fritz.prototype, "LEVELCONTROL",      {value: module.exports.FUNCTION_LEVELCONTROL,      writable: false}); }
+    if (!Fritz.prototype.COLORCONTROL)      { Object.defineProperty( Fritz.prototype, "COLORCONTROL",      {value: module.exports.FUNCTION_COLORCONTROL,      writable: false}); }
 }
 
 Fritz.prototype = {
