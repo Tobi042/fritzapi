@@ -90,6 +90,10 @@ Fritz.prototype = {
         }.bind(this));
     },
 
+    getOverviewData: function()
+    {
+        return this.call( module.exports.getOverviewData );
+    },
 
     getSID: function() {
         return this.sid;
@@ -576,6 +580,24 @@ module.exports.getOSVersion = function(sid, options)
             ? json.data.fritzos.nspver
             : null;
         return osVersion;
+    });
+};
+
+
+// get 'overview' page data
+module.exports.getOverviewData = function(sid, options)
+{
+    let req = {
+        method: 'POST',
+        form: {
+            sid: sid,
+            shr: 1,
+            page: 'overview'
+        }
+    };
+    return httpRequest('/data.lua', req, options).then(function(body)
+    {
+        return JSON.parse(body);
     });
 };
 
