@@ -283,6 +283,11 @@ Fritz.prototype = {
     },
 
 
+    getPhoneList: function() {
+        return executeCommand(this.sid, null, null, null, "/fon_num/foncalls_list.lua?csv=");
+    },
+
+
     /*
      * Helper functions
      */
@@ -875,6 +880,134 @@ module.exports.getButtonList = function(sid, options)
         return device.identifier;
     });
 };
+
+
+/*
+ * Light bulbs (HAN-FUN)
+ */
+
+// get a list of all bulbs
+module.exports.getBulbList = function(sid, options)
+{
+    return module.exports.getDeviceListFiltered(sid, {
+        functionbitmask: module.exports.FUNCTION_LIGHT
+        }, options).map(function(device) {
+        return device.identifier;
+    });
+};
+
+// get a list of bulbs which support colors
+module.exports.getColorBulbList = function(sid, options)
+{
+    return module.exports.getDeviceListFiltered(sid, {
+        functionbitmask: module.exports.FUNCTION_LIGHT | module.exports.FUNCTION_COLORCONTROL
+        }, options).map(function(device) {
+        return device.identifier;
+    });
+};
+
+// switch the device on, of or toggle its current state
+module.exports.setSimpleOnOff = function(sid, ain, state, options)
+{
+    //ain = ain.replace('-1','');
+    return executeCommand(sid, 'setsimpleonoff&onoff=' + state2api(state), ain, options).then(function(body) {
+        // api does not return a value
+        return state;
+    });
+};
+
+// Dimm the device, allowed values are 0 - 255
+module.exports.setLevel = function(sid, ain, level, options)
+{
+    return executeCommand(sid, 'setlevel&level=' + level2api(level,false), ain, options).then(function(body) {
+        // api does not return a value
+        return level;
+    });
+};
+
+// Dimm the device, allowed values are 0 - 100
+module.exports.setLevelPercentage = function(sid, ain, levelInPercent, options)
+{
+    return executeCommand(sid, 'setlevelpercentage&level=' + level2api(level,true), ain, options).then(function(body) {
+        // api does not return a value
+        return level;
+    });
+};
+
+// Set the color and saturation of a color bulb
+// Valid color values are:
+// red, orange, yellow, lime, green, turquoise, cyan,
+// lightblue, blue, purple, magenta and pink
+// Valid satindex values are: 0, 1 or 2
+module.exports.setColor = function(sid, ain,  color, satindex, duration, options)
+{
+    return executeCommand(sid, 'setcolor&hue=' + color2apihue(color) +
+                                '&saturation=' + satindex2apisat(color, satindex) +
+                                '&duration=' + duration, ain, options).then(function(body) {
+        // api does not return a value
+        return color;
+    });
+};
+
+// Set the color temperature of a bulb.
+// Valid values are 2700, 3000, 3400,3800, 4200, 4700, 5300, 5900 and 6500.
+// Other values are adjusted to one of the above values
+module.exports.setColorTemperature = function(sid, ain,  temperature, duration, options)
+{
+    var temp = colortemp2api(temperature);
+    return executeCommand(sid, 'setcolortemperature&temperature=' + temp +
+                               '&duration=' + duration, ain, options).then(function(body) {
+        // api does not return a value, return our corrected value
+        return temp;
+    });
+};
+
+// get the color defaults
+// This is mostly useless because they are no defaults which can be changed but
+// fixed values. Only combinations returned by this api call are accepted by
+// setcolor and setcolortemperature.
+// module.exports.getColorDefaults = function(sid, ain, options)
+// {
+//     return executeCommand(sid, 'getcolordefaults', ain, options).then(function(body) {
+//         return body;
+//     });
+// };
+
+// ------------------------------------------------
+// Not yet tested - deactivated for now
+// I don't know about any blind control unit with HANFUN support, but this API call makes
+// it plausible that AVM or a partner has somthing like that in the pipeline.
+//
+// module.exports.setBlind = function(sid, ain,  blindState, options)
+// {
+//     // „open“, „close“ or „stop“
+//     return executeCommand(sid, 'setblind&target=' + blindstate2api(blindState), ain, options).then(function(body) {
+//         // api does not return a value
+//         return blindState;
+//     });
+// };
+
+// get battery charge
+// Attention: this function queries the whole device list to get the value for one device.
+// If multiple device will be queried for the battery status, a better approach would be to
+// get the device list once and then filter out the devices of interest.
+module.exports.getBatteryCharge = function(sid, ain, options)
+{
+    return module.exports.getDevice(sid, ain, options).then(function(device) {
+        return device.battery;
+    });
+};
+
+// Get the window open flag of a thermostat
+// Attention: this function queries the whole device list to get the value for one device.
+// If multiple device will be queried for the window open status, a better approach would
+// be to get the device list once and then filter out the devices of interest.
+module.exports.getWindowOpen = function(sid, ain, options)
+{
+    return module.exports.getDevice(sid, ain, options).then(function(device) {
+        return device.hkr.windowopenactiv == '0' ? false : true;
+    });
+}
 
 
 /*
