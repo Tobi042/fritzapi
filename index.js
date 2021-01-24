@@ -209,13 +209,13 @@ Fritz.prototype = {
         return this.call(module.exports.getTempComfort, ain);
     },
 
-    // setHkrBoost: function(ain, endtime) {
-    //     return this.call(module.exports.setHkrBoost, ain, endtime);
-    // },
+    setHkrBoost: function(ain, endtime) {
+        return this.call(module.exports.setHkrBoost, ain, endtime);
+    },
 
-    // setHkrWindowOpen: function(ain, endtime) {
-    //     return this.call(module.exports.setHkrWindowOpen, ain, endtime);
-    // },
+    setHkrWindowOpen: function(ain, endtime) {
+        return this.call(module.exports.setHkrWindowOpen, ain, endtime);
+    },
 
     // light related
 
@@ -388,11 +388,85 @@ function api2temp(param)
     }
 }
 
-// function time2api(param)
-// {
-//     // convert the input to a unix timestamp
-//     return 0;
-// }
+/*
+ * Time conversion (for window-open and boost)
+ */
+const DEFAULT_DURATION = 10; // minutes
+const MAX_DURATION = 24 * 60; // 24 hours in minutes
+const MIN_DURATION = 1; // minute
+
+// Converts values from string (ISO date), number (minutes or epoch) or boolean (default duration or off)
+function time2api(param)
+{
+    let targetDate = null;
+    let duration = null;
+    const now = Math.floor(Date.now() / 1000); // in seconds
+    const maxTargetDate = now + MAX_DURATION * 60;
+    switch (typeof param) {
+        case 'boolean': {
+            if (param === true) {
+                duration = DEFAULT_DURATION;
+            } else {
+                return 0;
+            }
+            break;
+        }
+        case 'string': {
+            if (param === 'on' || param === 'ON') {
+                duration = DEFAULT_DURATION;
+            } else if (param === 'off' || param === 'OFF') {
+                return 0;
+            } else {
+                try {
+                    const parsed = parseInt(duration, 10);
+                    if (param <= MAX_DURATION) {
+                        duration = parsed;
+                    } else {
+                        targetDate = parsed;
+                    }
+                } catch (_) {
+                    try {
+                        targetDate = Math.floor(Date.parse(param) / 1000);
+                    } catch (_) {
+                        // no idea what this is
+                        return 0;
+                    }
+                }
+            }
+            break;
+        }
+        case 'number': {
+            if (param <= MAX_DURATION) {
+                duration = param;
+            } else {
+                targetDate = param;
+            }
+            break;
+        }
+        default:
+            // no idea what this is
+            return 0;
+    }
+    if (targetDate !== null) {
+        if (targetDate > maxTargetDate) {
+            return maxTargetDate;
+        } else if (targetDate <= now) {
+            return 0;
+        } else {
+            return targetDate;
+        }
+    } else if (duration !== null) {
+        if (duration > MAX_DURATION) {
+            return MAX_DURATION;
+        } else if (duration < MIN_DURATION) {
+            return 0;
+        } else {
+            return now + duration * 60; // remember duration is in minutes
+        }
+    } else {
+        return 0;
+    }
+}
 
 // function api2time(param)
 // {
@@ -536,7 +610,7 @@ module.exports.getSessionID = function(username, password, options)
     return executeCommand(null, null, null, options, '/login_sid.lua').then(function(body) {
         var challenge = body.match("<Challenge>(.*?)</Challenge>")[1];
         var challengeResponse = challenge +'-'+
-            require('crypto').createHash('md5').update(Buffer(challenge+'-'+password, 'UTF-16LE')).digest('hex');
+            require('crypto').createHash('md5').update(Buffer.from(challenge+'-'+password, 'UTF-16LE')).digest('hex');
         var url = "/login_sid.lua?username=" + username + "&response=" + challengeResponse;
 
         return executeCommand(null, null, null, options, url).then(function(body) {
@@ -841,25 +915,23 @@ module.exports.getTempComfort = function(sid, ain, options)
 };
 
 // ------------------------------------------------
-// Not yet tested - deactivated for now
-//
 // activate boost with end time or deactivate boost
-// module.exports.setHkrBoost = function(sid, ain, endtime, options)
-// {
-//     return executeCommand(sid, 'sethkrboost&endtimestamp=' + time2api(temp), ain, options).then(function(body) {
-//         // api does not return a value
-//         return temp;
-//     });
-// };
+module.exports.setHkrBoost = function(sid, ain, endtime, options)
+{
+    return executeCommand(sid, 'sethkrboost&endtimestamp=' + time2api(endtime), ain, options).then(function(body) {
+        // returns the end timestamp
+        return body;
+    });
+};
 
-// activate window open  with end time or deactivate boost
-// module.exports.setHkrWindowOpen = function(sid, ain, endtime, options)
-// {
-//     return executeCommand(sid, 'sethkrwindowopen&endtimestamp=' + time2api(temp), ain, options).then(function(body) {
-//         // api does not return a value
-//         return temp;
-//     });
-// };
+// activate window open  with end time or deactivate window open
+module.exports.setHkrWindowOpen = function(sid, ain, endtime, options)
+{
+    return executeCommand(sid, 'sethkrwindowopen&endtimestamp=' + time2api(endtime), ain, options).then(function(body) {
+        // returns the end timestamp
+        return body;
+    });
+};
 // ------------------------------------------------
 
 /*

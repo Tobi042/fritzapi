@@ -63,3 +63,7 @@ typings/
 # vscode
 .vscode/
 fritzapi.code-workspace
+
+# Jetbrains
+.idea
+*.iml
